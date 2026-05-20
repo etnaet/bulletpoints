@@ -70,9 +70,9 @@ def extract_fields(fact_text, strategy_text):
             str(int(m.group(1)) / 100)
         )
 
-    # TER / ongoing charge
+    # TER / Ongoing Management Charge for Class I
     m = re.search(
-        r"I\s+LU\d+\s+\S+\s+MSCI Europe Net Index\s+\d{2} \w+ \d{4}\s+([\d.]+)%",
+        r"\nI\s+LU\d+\s+\S+\s+MSCI Europe Net Index\s+\d{2}\s+\w+\s+\d{4}\s+([\d.]+)%",
         fact_text
     )
 
