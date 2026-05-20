@@ -41,9 +41,9 @@ def extract_fields(fact_text, strategy_text):
 
     # Strategy assets + fund assets
     m = re.search(
-        r"Total Europe Equity Strategy Assets:\s*€([\d.]+)\s*million.*?Total Fund Assets:\s*€([\d.]+)\s*million",
+        r"Total\s+(?:Europe Equity\s+)?Strategy Assets:\s*€\s*([\d.,]+)\s*million.*?Total Fund Assets:\s*€\s*([\d.,]+)\s*million",
         strategy_text,
-        re.S,
+        re.S | re.I,
     )
 
     if m:
@@ -53,32 +53,32 @@ def extract_fields(fact_text, strategy_text):
     # Investment experience
     m = re.search(
         r"(\d+)\s+years of investment experience",
-        strategy_text
+        strategy_text,
+        re.I
     )
 
     if m:
         fields["investment_experience"] = m.group(1)
 
-    # Management fee
+    # Management fee: Class I
     m = re.search(
-        r"Class I\s+N/A\s+1,000,000\s+(\d+)\s+basis points",
-        strategy_text
+        r"Class I\s+N/A\s+[\d,]+\s+(\d+)\s+basis points",
+        strategy_text,
+        re.I
     )
 
     if m:
-        fields["mgmt_fee"] = german_decimal(
-            str(int(m.group(1)) / 100)
-        )
+        fields["mgmt_fee"] = german_decimal(str(int(m.group(1)) / 100))
 
-    # TER / Ongoing Management Charge for Class I
+        # TER / Ongoing Management Charge for Class I
     m = re.search(
-        r"\nI\s+LU\d+\s+\S+\s+MSCI Europe Net Index\s+\d{2}\s+\w+\s+\d{4}\s+([\d.]+)%",
-        fact_text
+        r"\nI\s+LU\d+\s+\S+\s+.*?\s+(\d+\.\d+)%",
+        fact_text,
+        re.I
     )
 
     if m:
         fields["ter"] = german_decimal(m.group(1))
-
     return fields
 
 def update_text(text, fields):
@@ -88,10 +88,10 @@ def update_text(text, fields):
         r">\*\d+\*\s+Jahre Investmenterfahrung":
         f">*{fields.get('investment_experience', 'MISSING')}* Jahre Investmenterfahrung",
 
-        r"Gesamtstrategie ~\*[\d,]+\*\s+Mio\. Euro":
+       r"Gesamtstrategie ~\*[^*]+\*\s+Mio\. Euro":
         f"Gesamtstrategie ~*{fields.get('strategy_assets', 'MISSING')}* Mio. Euro",
 
-        r"SICAV Fondsvolumen ~\*[\d,]+\*\s+Mio\. Euro":
+       r"SICAV Fondsvolumen ~\*[^*]+\*\s+Mio\. Euro":
         f"SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')}* Mio. Euro",
 
         r"Mgmt\. Fee \*[\d,]+\*%":
