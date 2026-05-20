@@ -69,16 +69,21 @@ def extract_fields(fact_text, strategy_text):
 
     if m:
         fields["mgmt_fee"] = german_decimal(str(int(m.group(1)) / 100))
+    # TER / Ongoing Management Charge for Class I
+    ter_match = None
 
-        # TER / Ongoing Management Charge for Class I
-    m = re.search(
-        r"\nI\s+LU\d+\s+\S+\s+.*?\s+(\d+\.\d+)%",
-        fact_text,
-        re.I
-    )
+    lines = fact_text.splitlines()
 
-    if m:
-        fields["ter"] = german_decimal(m.group(1))
+    for line in lines:
+        if line.strip().startswith("I "):
+            numbers = re.findall(r"(\d+\.\d+)%", line)
+
+            if numbers:
+                ter_match = numbers[-1]
+                break
+
+    if ter_match:
+        fields["ter"] = german_decimal(ter_match)
     return fields
 
 def update_text(text, fields):
