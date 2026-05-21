@@ -41,18 +41,22 @@ def extract_fields(fact_text, strategy_text):
 
     fields = {}
 
-    # Strategy assets + fund assets from Strategy Highlights title area
-    m = re.search(
-        r"Total\s+Strategy\s+Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)\s*\|\s*Total\s+Fund\s+Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)",
-        strategy_text,
-        re.I,
-    )
+    # Strategy assets + fund assets from top Strategy Highlights line only
+    for line in strategy_text.splitlines():
+        if "Total Strategy Assets:" in line and "Total Fund Assets:" in line:
 
-    if m:
-        fields["strategy_assets"] = german_decimal(m.group(1))
-        fields["strategy_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
-        fields["fund_assets"] = german_decimal(m.group(3))
-        fields["fund_assets_unit"] = "Mrd." if m.group(4).lower() == "billion" else "Mio."
+            m = re.search(
+                r"Total Strategy Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)\s*\|\s*Total Fund Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)",
+                line,
+                re.I
+            )
+
+            if m:
+                fields["strategy_assets"] = german_decimal(m.group(1))
+                fields["strategy_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
+                fields["fund_assets"] = german_decimal(m.group(3))
+                fields["fund_assets_unit"] = "Mrd." if m.group(4).lower() == "billion" else "Mio."
+                break
 
     # Investment experience
     m = re.search(
