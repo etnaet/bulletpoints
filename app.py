@@ -85,7 +85,6 @@ if m:
 
     if m:
         fields["mgmt_fee"] = german_decimal(str(float(m.group(1)) / 100))
-        
         # TER / Ongoing Management Charge for Class I
     uploaded_bytes = fact_sheet.getvalue()
 
