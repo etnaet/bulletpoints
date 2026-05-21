@@ -55,15 +55,15 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
         fields["fund_assets_unit"] = "Mrd." if m.group(4).lower() == "billion" else "Mio."
 
     # Fund assets only, when Strategy Highlights does not show strategy assets
-    if "fund_assets" not in fields:
-        m = re.search(
-            r"Total Fund Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)",
-            strategy_text,
-            re.I
-        )
-        if m:
-            fields["fund_assets"] = german_decimal(m.group(1))
-            fields["fund_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
+if "fund_assets" not in fields:
+    m = re.search(
+        r"Total Fund Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)",
+        strategy_text,
+        re.I | re.M        # ← only change: added re.M
+    )
+    if m:
+        fields["fund_assets"] = german_decimal(m.group(1))
+        fields["fund_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
 
     # Investment experience
     m = re.search(
@@ -118,10 +118,17 @@ def update_text(text, fields):
     updated = text
 
     updated = re.sub(
-    r"Assets in der Gesamtstrategie\s*~?\*[^*]+\*[^/]+//\s*SICAV Fondsvolumen\s*~?\*[^*]+\*[^•\n]+",
-    f"Assets in der Gesamtstrategie ~*{fields.get('strategy_assets', 'MISSING')} {fields.get('strategy_assets_unit', 'MISSING')}* USD // SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')} {fields.get('fund_assets_unit', 'MISSING')}* USD",
-    updated
-)
+        r"Assets in der Gesamtstrategie\s*~?\*[^*]+\*[^/]+//\s*SICAV Fondsvolumen\s*~?\*[^*]+\*[^•\n]+",
+        f"Assets in der Gesamtstrategie ~*{fields.get('strategy_assets', 'MISSING')} ...",
+        updated
+    )
+
+    # ADD THIS RIGHT BELOW ↓
+    updated = re.sub(
+        r"SICAV Fondsvolumen\s*~?\*[^*]+\*\s*(?:Mio\.|Mrd\.)?\s*(?:Euro|USD)",
+        f"SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')} {fields.get('fund_assets_unit', 'MISSING')}* USD",
+        updated
+    )
 
     for pattern, replacement in replacements.items():
         updated = re.sub(
