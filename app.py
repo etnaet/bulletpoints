@@ -113,7 +113,7 @@ def update_text(text, fields):
 
     updated = text
 
-        updated = re.sub(
+    updated = re.sub(
         r"Gesamtstrategie ~\*[^*]+\*\s+(?:Mio\.|Mrd\.)\s+(?:Euro|USD)\s*//\s*SICAV Fondsvolumen ~\*[^*]+\*\s+(?:Mio\.|Mrd\.)\s+(?:Euro|USD)",
         f"Gesamtstrategie ~*{fields.get('strategy_assets', 'MISSING')}* {fields.get('strategy_assets_unit', 'MISSING')} USD // SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')}* {fields.get('fund_assets_unit', 'MISSING')} USD",
         updated
