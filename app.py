@@ -34,10 +34,8 @@ def read_pdf(uploaded_file):
 def german_decimal(value):
     value = value.strip()
     if "," in value and "." in value:
-        # e.g. "1,176.9" — comma is thousands sep, dot is decimal
-        value = value.replace(",", "")  # → "1176.9"
+        value = value.replace(",", "")
         integer, decimal = value.split(".")
-        # add period as thousands separator
         integer_formatted = ""
         for i, digit in enumerate(reversed(integer)):
             if i > 0 and i % 3 == 0:
@@ -45,7 +43,6 @@ def german_decimal(value):
             integer_formatted = digit + integer_formatted
         return integer_formatted + "," + decimal
     else:
-        # e.g. "10.2" → "10,2"
         return value.replace(".", ",")
 
 def extract_fields(fact_text, strategy_text, fact_sheet):
@@ -151,16 +148,16 @@ def update_text(text, fields):
 
     updated = text
 
-    # Assets in der Gesamtstrategie + SICAV Fondsvolumen on same line
+    # Assets in der Gesamtstrategie: + SICAV Fondsvolumen: on same line (colon required for both)
     updated = re.sub(
-        r"Assets in der Gesamtstrategie:?\s*~?\*[^*]+\*[^/]+//\s*SICAV Fondsvolumen\s*~?\*[^*]+\*[^•\n]+",
-        f"Assets in der Gesamtstrategie ~*{fields.get('strategy_assets', 'MISSING')} {fields.get('strategy_assets_unit', 'MISSING')}* USD // SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')} {fields.get('fund_assets_unit', 'MISSING')}* USD",
+        r"Assets in der Gesamtstrategie:\s*~?\*[^*]+\*[^/]+//\s*SICAV Fondsvolumen:\s*~?\*[^*]+\*[^•\n]+",
+        f"Assets in der Gesamtstrategie: ~*{fields.get('strategy_assets', 'MISSING')} {fields.get('strategy_assets_unit', 'MISSING')}* USD // SICAV Fondsvolumen: ~*{fields.get('fund_assets', 'MISSING')} {fields.get('fund_assets_unit', 'MISSING')}* USD",
         updated
     )
 
-    # SICAV Fondsvolumen standalone (with or without colon)
+    # SICAV Fondsvolumen standalone (colon required)
     updated = re.sub(
-        r"SICAV Fondsvolumen:?\s*~?\*[^*]+\*\s*(?:Mio\.|Mrd\.)?\s*(?:Euro|USD)",
+        r"SICAV Fondsvolumen:\s*~?\*[^*]+\*\s*(?:Mio\.|Mrd\.)?\s*(?:Euro|USD)",
         f"SICAV Fondsvolumen: ~*{fields.get('fund_assets', 'MISSING')} {fields.get('fund_assets_unit', 'MISSING')}* USD",
         updated
     )
