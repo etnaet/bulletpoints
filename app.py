@@ -61,16 +61,18 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
         if m:
             fields["fund_assets"] = german_decimal(m.group(1))
             fields["fund_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
+
     # Strategy assets alone (no fund assets on same line)
-if "strategy_assets" not in fields:
-    m = re.search(
-        r"Total\s+(?:[\w\s]+?\s+)?Strategy Assets:\s*[$€]([\d.,]+)\s*(million|billion)",
-        strategy_text,
-        re.I
-    )
-    if m:
-        fields["strategy_assets"] = german_decimal(m.group(1))
-        fields["strategy_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
+    if "strategy_assets" not in fields:
+        m = re.search(
+            r"Total\s+(?:[\w\s]+?\s+)?Strategy Assets:\s*[$€]([\d.,]+)\s*(million|billion)",
+            strategy_text,
+            re.I
+        )
+        if m:
+            fields["strategy_assets"] = german_decimal(m.group(1))
+            fields["strategy_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
+
     # Investment experience
     m = re.search(
         r"(\d+)\s+years of investment experience",
