@@ -104,12 +104,6 @@ def update_text(text, fields):
         r">\*\d+\*\s+Jahre Investmenterfahrung":
         f">*{fields.get('investment_experience', 'MISSING')}* Jahre Investmenterfahrung",
 
-               r"Gesamtstrategie ~\*[^*]+\*\s+(?:Mio\.|Mrd\.)\s+(?:Euro|USD)":
-        f"Gesamtstrategie ~*{fields.get('strategy_assets', 'MISSING')}* {fields.get('strategy_assets_unit', 'MISSING')} USD",
-
-        r"SICAV Fondsvolumen ~\*[^*]+\*\s+(?:Mio\.|Mrd\.)\s+(?:Euro|USD)":
-        f"SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')}* {fields.get('fund_assets_unit', 'MISSING')} USD",
-
         r"Mgmt\. Fee \*[\d,]+\*%":
         f"Mgmt. Fee *{fields.get('mgmt_fee', 'MISSING')}*%",
 
@@ -118,6 +112,12 @@ def update_text(text, fields):
     }
 
     updated = text
+
+        updated = re.sub(
+        r"Gesamtstrategie ~\*[^*]+\*\s+(?:Mio\.|Mrd\.)\s+(?:Euro|USD)\s*//\s*SICAV Fondsvolumen ~\*[^*]+\*\s+(?:Mio\.|Mrd\.)\s+(?:Euro|USD)",
+        f"Gesamtstrategie ~*{fields.get('strategy_assets', 'MISSING')}* {fields.get('strategy_assets_unit', 'MISSING')} USD // SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')}* {fields.get('fund_assets_unit', 'MISSING')} USD",
+        updated
+    )
 
     for pattern, replacement in replacements.items():
         updated = re.sub(
