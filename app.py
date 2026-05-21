@@ -40,12 +40,12 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
 
     # Strategy assets + fund assets from Strategy Highlights PDF
     m_strat = re.search(
-        r"Total\s+(?:[\w\-]+\s+)*?Strategy Assets:\s*[$€]([\d.,]+)\s*(million|billion)",
+        r"Total\s+(?:[\w\-]+\s+)*?Strategy Assets:\s*[$€`]([\d.,]+)\s*(million|billion)",
         strategy_text,
         re.I
     )
     m_fund = re.search(
-        r"Total Fund Assets:\s*[$€]([\d.,]+)\s*(million|billion)",
+        r"Total Fund Assets:\s*[$€`]([\d.,]+)\s*(million|billion)",
         strategy_text,
         re.I
     )
@@ -60,7 +60,7 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
     # Fund assets only, when Strategy Highlights does not show strategy assets
     if "fund_assets" not in fields:
         m = re.search(
-            r"Total Fund Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)",
+            r"Total Fund Assets:\s*[$€`]\s*([\d.,]+)\s*(million|billion)",
             strategy_text,
             re.I | re.M
         )
@@ -71,7 +71,7 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
     # Fund assets from fact sheet header if not found in strategy PDF
     if "fund_assets" not in fields:
         m = re.search(
-            r"Total Fund Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)",
+            r"Total Fund Assets:\s*[$€`]\s*([\d.,]+)\s*(million|billion)",
             fact_text,
             re.I | re.M
         )
@@ -82,7 +82,7 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
     # Strategy assets alone (no fund assets on same line)
     if "strategy_assets" not in fields:
         m = re.search(
-            r"Total\s+(?:[\w\s]+?\s+)?Strategy Assets:\s*[$€]([\d.,]+)\s*(million|billion)",
+            r"Total\s+(?:[\w\s]+?\s+)?Strategy Assets:\s*[$€`]([\d.,]+)\s*(million|billion)",
             strategy_text,
             re.I
         )
@@ -171,8 +171,7 @@ if st.button("Generate updated text"):
     else:
         fact_text = read_pdf(fact_sheet)
         strategy_text = read_pdf(strategy)
-        st.write(strategy_text[:2000])
-        
+
         fields = extract_fields(
             fact_text,
             strategy_text,
