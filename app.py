@@ -150,8 +150,6 @@ if st.button("Generate updated text"):
             strategy_text
         )
 
-        st.write(fields)
-
         updated = update_text(
             template,
             fields
