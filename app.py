@@ -43,10 +43,10 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
 
     # Strategy assets + fund assets from Strategy Highlights PDF
     m = re.search(
-        r"Total Strategy Assets:\s*[$€]([\d.,]+)\s*(million|billion)\s*\|\s*Total Fund Assets:\s*[$€]([\d.,]+)\s*(million|billion)",
-        strategy_text,
-        re.I | re.S
-    )
+    r"Total Strategy Assets:\s*[$€]([\d.,]+)\s*(million|billion)\s*\|\s*Total Fund Assets:\s*[$€]([\d.,]+)\s*(million|billion)",
+    strategy_text,
+    re.I
+)
 
     if m:
         fields["strategy_assets"] = german_decimal(m.group(1))
