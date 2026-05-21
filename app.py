@@ -43,7 +43,7 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
 
     # Strategy assets + fund assets from Strategy Highlights PDF
     m = re.search(
-    r"Total Strategy Assets:\s*[$€]([\d.,]+)\s*(million|billion)\s*\|\s*Total Fund Assets:\s*[$€]([\d.,]+)\s*(million|billion)",
+    r"Total\s+(?:[\w\s]+?\s+)?Strategy Assets:\s*[$€]([\d.,]+)\s*(million|billion).*?\|\s*Total Fund Assets:\s*[$€]([\d.,]+)\s*(million|billion)",
     strategy_text,
     re.I
 )
