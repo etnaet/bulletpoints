@@ -144,6 +144,7 @@ if st.button("Generate updated text"):
 
         fact_text = read_pdf(fact_sheet)
         strategy_text = read_pdf(strategy)
+        st.text_area("DEBUG - raw strategy text", strategy_text, height=400)
 
         fields = extract_fields(
             fact_text,
