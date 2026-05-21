@@ -146,10 +146,12 @@ if st.button("Generate updated text"):
         strategy_text = read_pdf(strategy)
 
         fields = extract_fields(
-            fact_text,
-            strategy_text,
-            fact_sheet
-        )
+    fact_text,
+    strategy_text,
+    fact_sheet
+)
+
+st.write("DEBUG fields:", fields)  # ADD THIS
 
         updated = update_text(
             template,
