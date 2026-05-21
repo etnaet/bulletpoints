@@ -151,7 +151,6 @@ if st.button("Generate updated text"):
             fact_sheet
         )
 
-        st.write("DEBUG fields:", fields)  # ADD THIS
 
         updated = update_text(
             template,
