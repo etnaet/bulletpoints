@@ -4,7 +4,7 @@ import fitz  # PyMuPDF
 import pdfplumber
 import io
 
-st.title("Fund Text Updater")
+st.title("Fund Bulletpoints Updater")
 
 fact_sheet = st.file_uploader(
     "Upload Fact Sheet PDF",
