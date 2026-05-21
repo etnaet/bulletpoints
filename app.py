@@ -108,7 +108,7 @@ if m:
                             charge = charge.replace("%", "").strip()
                             fields["ter"] = german_decimal(charge)
 
-    return fields
+        return fields
 
 def update_text(text, fields):
 
