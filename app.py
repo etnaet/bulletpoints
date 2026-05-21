@@ -43,14 +43,16 @@ def extract_fields(fact_text, strategy_text):
 
     # Strategy assets + fund assets
     m = re.search(
-        r"Total\s+(?:Europe Equity\s+)?Strategy Assets:\s*€\s*([\d.,]+)\s*million.*?Total Fund Assets:\s*€\s*([\d.,]+)\s*million",
+        r"Total\s+(?:[A-Za-z ]+)?Strategy Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion).*?Total Fund Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)",
         strategy_text,
         re.S | re.I,
     )
 
     if m:
         fields["strategy_assets"] = german_decimal(m.group(1))
-        fields["fund_assets"] = german_decimal(m.group(2))
+        fields["strategy_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
+        fields["fund_assets"] = german_decimal(m.group(3))
+        fields["fund_assets_unit"] = "Mrd." if m.group(4).lower() == "billion" else "Mio."
 
     # Investment experience
     m = re.search(
@@ -102,11 +104,11 @@ def update_text(text, fields):
         r">\*\d+\*\s+Jahre Investmenterfahrung":
         f">*{fields.get('investment_experience', 'MISSING')}* Jahre Investmenterfahrung",
 
-       r"Gesamtstrategie ~\*[^*]+\*\s+Mio\. Euro":
-        f"Gesamtstrategie ~*{fields.get('strategy_assets', 'MISSING')}* Mio. Euro",
+               r"Gesamtstrategie ~\*[^*]+\*\s+(?:Mio\.|Mrd\.)\s+(?:Euro|USD)":
+        f"Gesamtstrategie ~*{fields.get('strategy_assets', 'MISSING')}* {fields.get('strategy_assets_unit', 'MISSING')} USD",
 
-       r"SICAV Fondsvolumen ~\*[^*]+\*\s+Mio\. Euro":
-        f"SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')}* Mio. Euro",
+        r"SICAV Fondsvolumen ~\*[^*]+\*\s+(?:Mio\.|Mrd\.)\s+(?:Euro|USD)":
+        f"SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')}* {fields.get('fund_assets_unit', 'MISSING')} USD",
 
         r"Mgmt\. Fee \*[\d,]+\*%":
         f"Mgmt. Fee *{fields.get('mgmt_fee', 'MISSING')}*%",
