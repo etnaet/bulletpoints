@@ -86,6 +86,13 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
             strategy_text,
             re.I
         )
+        if not m:
+            # Last resort: just find "Strategy Assets:" anywhere
+            m = re.search(
+                r"Strategy Assets:\s*[$€`]([\d.,]+)\s*(million|billion)",
+                strategy_text,
+                re.I
+            )
         if m:
             fields["strategy_assets"] = german_decimal(m.group(1))
             fields["strategy_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
