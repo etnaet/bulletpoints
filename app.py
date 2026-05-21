@@ -120,7 +120,7 @@ def update_text(text, fields):
     )
 
     for pattern, replacement in replacements.items():
-    updated = re.sub(
+        updated = re.sub(
             pattern,
             replacement,
             updated
