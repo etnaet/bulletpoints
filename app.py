@@ -171,7 +171,8 @@ if st.button("Generate updated text"):
     else:
         fact_text = read_pdf(fact_sheet)
         strategy_text = read_pdf(strategy)
-
+        st.write(strategy_text[:2000])
+        
         fields = extract_fields(
             fact_text,
             strategy_text,
