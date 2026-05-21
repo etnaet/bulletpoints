@@ -13,10 +13,10 @@ st.markdown("""
 3. Click **Generate updated text** to get the refreshed version.
 
 **What this tool can currently update** (numbers must be wrapped in `*asterisks*` in your template):
-- 📊 **Strategy assets & SICAV Fondsvolumen** — total AUM of the strategy and the SICAV sub-fund
-- 👤 **Years of investment experience** — of the portfolio manager *(note: currently captures the first manager listed only)*
-- 📋 **Portfoliogröße** — actual number of holdings/titles in the portfolio
-- 💰 **Management fee & TER** — for the Class I share class
+- **Strategy & Fund Total Assets
+- **Years of investment experience** of the portfolio manager *(note: currently captures the first manager listed only)*
+- **Size of the Portfolio** — actual number of holdings/titles in the portfolio
+- **Management fee & TER** — for the Class I share class
 """)
 
 st.divider()
