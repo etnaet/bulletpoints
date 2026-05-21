@@ -40,22 +40,22 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
 
     # Strategy assets + fund assets from Strategy Highlights PDF
     m_strat = re.search(
-    r"Total\s+(?:[\w\-]+\s+)*?Strategy Assets:\s*[$€]([\d.,]+)\s*(million|billion)",
-    strategy_text,
-    re.I
-)
-m_fund = re.search(
-    r"Total Fund Assets:\s*[$€]([\d.,]+)\s*(million|billion)",
-    strategy_text,
-    re.I
-)
+        r"Total\s+(?:[\w\-]+\s+)*?Strategy Assets:\s*[$€]([\d.,]+)\s*(million|billion)",
+        strategy_text,
+        re.I
+    )
+    m_fund = re.search(
+        r"Total Fund Assets:\s*[$€]([\d.,]+)\s*(million|billion)",
+        strategy_text,
+        re.I
+    )
 
-if m_strat:
-    fields["strategy_assets"] = german_decimal(m_strat.group(1))
-    fields["strategy_assets_unit"] = "Mrd." if m_strat.group(2).lower() == "billion" else "Mio."
-if m_fund:
-    fields["fund_assets"] = german_decimal(m_fund.group(1))
-    fields["fund_assets_unit"] = "Mrd." if m_fund.group(2).lower() == "billion" else "Mio."
+    if m_strat:
+        fields["strategy_assets"] = german_decimal(m_strat.group(1))
+        fields["strategy_assets_unit"] = "Mrd." if m_strat.group(2).lower() == "billion" else "Mio."
+    if m_fund:
+        fields["fund_assets"] = german_decimal(m_fund.group(1))
+        fields["fund_assets_unit"] = "Mrd." if m_fund.group(2).lower() == "billion" else "Mio."
 
     # Fund assets only, when Strategy Highlights does not show strategy assets
     if "fund_assets" not in fields:
@@ -67,6 +67,7 @@ if m_fund:
         if m:
             fields["fund_assets"] = german_decimal(m.group(1))
             fields["fund_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
+
     # Fund assets from fact sheet header if not found in strategy PDF
     if "fund_assets" not in fields:
         m = re.search(
@@ -77,6 +78,7 @@ if m_fund:
         if m:
             fields["fund_assets"] = german_decimal(m.group(1))
             fields["fund_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
+
     # Strategy assets alone (no fund assets on same line)
     if "strategy_assets" not in fields:
         m = re.search(
