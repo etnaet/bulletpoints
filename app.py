@@ -85,7 +85,12 @@ if m:
 
     if m:
         fields["mgmt_fee"] = german_decimal(str(float(m.group(1)) / 100))
-        
+# Add this temporarily above line 89 to confirm scope
+def get_ter_charge(fact_sheet):  # <- is this actually there?
+    # TER / Ongoing Management Charge for Class I
+    uploaded_bytes = fact_sheet.getvalue()
+    ...
+    return fields        
         # TER / Ongoing Management Charge for Class I
     uploaded_bytes = fact_sheet.getvalue()
 
