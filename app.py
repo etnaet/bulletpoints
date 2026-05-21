@@ -38,23 +38,25 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
 
     fields = {}
 
+    # Strategy assets + fund assets together on same line in strategy PDF
     m_strat = re.search(
         r"Total\s+(?:[\w\-]+\s+)*?Strategy Assets:\s*[$€`]([\d.,]+)\s*(million|billion)",
         strategy_text,
         re.I
     )
-    m_fund = re.search(
-        r"Total Fund Assets:\s*[$€`]([\d.,]+)\s*(million|billion)",
-        strategy_text,
-        re.I
-    )
-
     if m_strat:
         fields["strategy_assets"] = german_decimal(m_strat.group(1))
         fields["strategy_assets_unit"] = "Mrd." if m_strat.group(2).lower() == "billion" else "Mio."
-    if m_fund:
-        fields["fund_assets"] = german_decimal(m_fund.group(1))
-        fields["fund_assets_unit"] = "Mrd." if m_fund.group(2).lower() == "billion" else "Mio."
+
+    # Fund assets: check fact sheet FIRST (more precise), then strategy PDF as fallback
+    m = re.search(
+        r"Total Fund Assets:\s*[$€`]\s*([\d.,]+)\s*(million|billion)",
+        fact_text,
+        re.I | re.M
+    )
+    if m:
+        fields["fund_assets"] = german_decimal(m.group(1))
+        fields["fund_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
 
     if "fund_assets" not in fields:
         m = re.search(
@@ -66,16 +68,7 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
             fields["fund_assets"] = german_decimal(m.group(1))
             fields["fund_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
 
-    if "fund_assets" not in fields:
-        m = re.search(
-            r"Total Fund Assets:\s*[$€`]\s*([\d.,]+)\s*(million|billion)",
-            fact_text,
-            re.I | re.M
-        )
-        if m:
-            fields["fund_assets"] = german_decimal(m.group(1))
-            fields["fund_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
-
+    # Strategy assets alone fallback
     if "strategy_assets" not in fields:
         m = re.search(
             r"Total\s+(?:[\w\s]+?\s+)?Strategy Assets:\s*[$€`]([\d.,]+)\s*(million|billion)",
@@ -92,6 +85,7 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
             fields["strategy_assets"] = german_decimal(m.group(1))
             fields["strategy_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
 
+    # Investment experience
     m = re.search(
         r"(\d+)\s+years of investment experience",
         strategy_text,
@@ -100,6 +94,7 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
     if m:
         fields["investment_experience"] = m.group(1)
 
+    # Management fee: Class I
     m = re.search(
         r"Class I\s+N/A\s+[\d,]+\s+([\d.]+)\s+basis points",
         strategy_text,
@@ -108,6 +103,7 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
     if m:
         fields["mgmt_fee"] = german_decimal(str(float(m.group(1)) / 100))
 
+    # TER / Ongoing Management Charge for Class I
     uploaded_bytes = fact_sheet.getvalue()
     with pdfplumber.open(io.BytesIO(uploaded_bytes)) as pdf:
         for page in pdf.pages:
@@ -141,10 +137,17 @@ def update_text(text, fields):
 
     updated = text
 
-    # Replace the entire assets line simply
+    # Assets in der Gesamtstrategie + SICAV Fondsvolumen on same line
     updated = re.sub(
-        r"Assets in der Gesamtstrategie:.*",
-        f"Assets in der Gesamtstrategie: ~*{fields.get('strategy_assets', 'MISSING')} {fields.get('strategy_assets_unit', 'MISSING')}* USD // SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')} {fields.get('fund_assets_unit', 'MISSING')}* USD",
+        r"Assets in der Gesamtstrategie\s*~?\*[^*]+\*[^/]+//\s*SICAV Fondsvolumen\s*~?\*[^*]+\*[^•\n]+",
+        f"Assets in der Gesamtstrategie ~*{fields.get('strategy_assets', 'MISSING')} {fields.get('strategy_assets_unit', 'MISSING')}* USD // SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')} {fields.get('fund_assets_unit', 'MISSING')}* USD",
+        updated
+    )
+
+    # SICAV Fondsvolumen standalone (with or without colon)
+    updated = re.sub(
+        r"SICAV Fondsvolumen:?\s*~?\*[^*]+\*\s*(?:Mio\.|Mrd\.)?\s*(?:Euro|USD)",
+        f"SICAV Fondsvolumen: ~*{fields.get('fund_assets', 'MISSING')} {fields.get('fund_assets_unit', 'MISSING')}* USD",
         updated
     )
 
