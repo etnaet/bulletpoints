@@ -41,22 +41,18 @@ def extract_fields(fact_text, strategy_text):
 
     fields = {}
 
-    # Strategy assets + fund assets from top Strategy Highlights line only
-    for line in strategy_text.splitlines():
-        if "Total Strategy Assets:" in line and "Total Fund Assets:" in line:
+   # Strategy assets + fund assets from Strategy Highlights PDF
+m = re.search(
+    r"Total\s+Strategy\s+Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion).*?Total\s+Fund\s+Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)",
+    strategy_text,
+    re.I | re.S
+)
 
-            m = re.search(
-                r"Total Strategy Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)\s*\|\s*Total Fund Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)",
-                line,
-                re.I
-            )
-
-            if m:
-                fields["strategy_assets"] = german_decimal(m.group(1))
-                fields["strategy_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
-                fields["fund_assets"] = german_decimal(m.group(3))
-                fields["fund_assets_unit"] = "Mrd." if m.group(4).lower() == "billion" else "Mio."
-                break
+if m:
+    fields["strategy_assets"] = german_decimal(m.group(1))
+    fields["strategy_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
+    fields["fund_assets"] = german_decimal(m.group(3))
+    fields["fund_assets_unit"] = "Mrd." if m.group(4).lower() == "billion" else "Mio."
 
     # Fund assets only, when Strategy Highlights does not show strategy assets
     if "fund_assets" not in fields:
@@ -82,13 +78,13 @@ def extract_fields(fact_text, strategy_text):
 
     # Management fee: Class I
     m = re.search(
-        r"Class I\s+N/A\s+[\d,]+\s+(\d+)\s+basis points",
+        r"Class I\s+N/A\s+[\d,]+\s+([\d.]+)\s+basis points",
         strategy_text,
         re.I
     )
 
     if m:
-        fields["mgmt_fee"] = german_decimal(str(int(m.group(1)) / 100))
+        fields["mgmt_fee"] = german_decimal(str(float(m.group(1)) / 100))
         
        # TER / Ongoing Management Charge for Class I
     import pdfplumber
