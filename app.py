@@ -41,18 +41,18 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
 
     fields = {}
 
-   # Strategy assets + fund assets from Strategy Highlights PDF
-m = re.search(
-    r"Total\s+Strategy\s+Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion).*?Total\s+Fund\s+Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)",
-    strategy_text,
-    re.I | re.S
-)
+    # Strategy assets + fund assets from Strategy Highlights PDF
+    m = re.search(
+        r"Total\s+Strategy\s+Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion).*?Total\s+Fund\s+Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)",
+        strategy_text,
+        re.I | re.S
+    )
 
-if m:
-    fields["strategy_assets"] = german_decimal(m.group(1))
-    fields["strategy_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
-    fields["fund_assets"] = german_decimal(m.group(3))
-    fields["fund_assets_unit"] = "Mrd." if m.group(4).lower() == "billion" else "Mio."
+    if m:
+        fields["strategy_assets"] = german_decimal(m.group(1))
+        fields["strategy_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
+        fields["fund_assets"] = german_decimal(m.group(3))
+        fields["fund_assets_unit"] = "Mrd." if m.group(4).lower() == "billion" else "Mio."
 
     # Fund assets only, when Strategy Highlights does not show strategy assets
     if "fund_assets" not in fields:
@@ -61,7 +61,6 @@ if m:
             strategy_text,
             re.I
         )
-
         if m:
             fields["fund_assets"] = german_decimal(m.group(1))
             fields["fund_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
@@ -72,7 +71,6 @@ if m:
         strategy_text,
         re.I
     )
-
     if m:
         fields["investment_experience"] = m.group(1)
 
@@ -82,16 +80,14 @@ if m:
         strategy_text,
         re.I
     )
-
     if m:
         fields["mgmt_fee"] = german_decimal(str(float(m.group(1)) / 100))
-        # TER / Ongoing Management Charge for Class I
-    uploaded_bytes = fact_sheet.getvalue()
 
+    # TER / Ongoing Management Charge for Class I
+    uploaded_bytes = fact_sheet.getvalue()
     with pdfplumber.open(io.BytesIO(uploaded_bytes)) as pdf:
         for page in pdf.pages:
             tables = page.extract_tables()
-
             for table in tables:
                 for row in table:
                     if row and len(row) >= 6:
@@ -99,7 +95,6 @@ if m:
                             str(cell).strip() if cell else ""
                             for cell in row
                         ]
-
                         if clean_row[0] == "I":
                             charge = clean_row[-1]
                             charge = charge.replace("%", "").strip()
