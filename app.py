@@ -114,22 +114,35 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
     if m:
         fields["mgmt_fee"] = german_decimal(str(float(m.group(1)) / 100))
 
-    # TER / Ongoing Management Charge for Class I
+    # TER / Ongoing Management Charge for Class I + Number of Holdings
     uploaded_bytes = fact_sheet.getvalue()
     with pdfplumber.open(io.BytesIO(uploaded_bytes)) as pdf:
         for page in pdf.pages:
             tables = page.extract_tables()
             for table in tables:
                 for row in table:
-                    if row and len(row) >= 6:
-                        clean_row = [
-                            str(cell).strip() if cell else ""
-                            for cell in row
-                        ]
-                        if clean_row[0] == "I":
-                            charge = clean_row[-1]
-                            charge = charge.replace("%", "").strip()
-                            fields["ter"] = german_decimal(charge)
+                    if not row:
+                        continue
+                    clean_row = [
+                        str(cell).strip() if cell else ""
+                        for cell in row
+                    ]
+
+                    # TER: row starts with "I" and has 6+ columns
+                    if len(clean_row) >= 6 and clean_row[0] == "I":
+                        charge = clean_row[-1]
+                        charge = charge.replace("%", "").strip()
+                        fields["ter"] = german_decimal(charge)
+
+                    # Number of Holdings: row starts with "Number of Holdings"
+                    if clean_row[0].lower().startswith("number of holdings") or \
+                       any("number of holdings" in cell.lower() for cell in clean_row):
+                        # Fund column is the first numeric value after the label
+                        for cell in clean_row[1:]:
+                            cell_clean = cell.replace(",", "").strip()
+                            if cell_clean.isdigit():
+                                fields["number_of_holdings"] = cell_clean
+                                break
 
     return fields
 
@@ -144,6 +157,9 @@ def update_text(text, fields):
 
         r"TER \*[\d,]+\*%":
         f"TER *{fields.get('ter', 'MISSING')}*%",
+
+        r"\*\d+\*\)":
+        f"*{fields.get('number_of_holdings', 'MISSING')}*)",
     }
 
     updated = text
