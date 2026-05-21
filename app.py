@@ -6,6 +6,21 @@ import io
 
 st.title("Fund Bulletpoints Updater")
 
+st.markdown("""
+**How to use:**
+1. Upload the **Fact Sheet** and **Strategy Highlights** PDFs from Seismic for the fund you want to update.
+2. Paste the **existing German text** from last month's Product Bullets Master File.
+3. Click **Generate updated text** to get the refreshed version.
+
+**What this tool can currently update** (numbers must be wrapped in `*asterisks*` in your template):
+- 📊 **Strategy assets & SICAV Fondsvolumen** — total AUM of the strategy and the SICAV sub-fund
+- 👤 **Years of investment experience** — of the portfolio manager *(note: currently captures the first manager listed only)*
+- 📋 **Portfoliogröße** — actual number of holdings/titles in the portfolio
+- 💰 **Management fee & TER** — for the Class I share class
+""")
+
+st.divider()
+
 fact_sheet = st.file_uploader(
     "Upload Fact Sheet PDF",
     type="pdf"
@@ -137,7 +152,6 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
                     # Number of Holdings: row starts with "Number of Holdings"
                     if clean_row[0].lower().startswith("number of holdings") or \
                        any("number of holdings" in cell.lower() for cell in clean_row):
-                        # Fund column is the first numeric value after the label
                         for cell in clean_row[1:]:
                             cell_clean = cell.replace(",", "").strip()
                             if cell_clean.isdigit():
