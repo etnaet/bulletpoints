@@ -38,7 +38,6 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
 
     fields = {}
 
-    # Strategy assets + fund assets from Strategy Highlights PDF
     m_strat = re.search(
         r"Total\s+(?:[\w\-]+\s+)*?Strategy Assets:\s*[$€`]([\d.,]+)\s*(million|billion)",
         strategy_text,
@@ -57,7 +56,6 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
         fields["fund_assets"] = german_decimal(m_fund.group(1))
         fields["fund_assets_unit"] = "Mrd." if m_fund.group(2).lower() == "billion" else "Mio."
 
-    # Fund assets only, when Strategy Highlights does not show strategy assets
     if "fund_assets" not in fields:
         m = re.search(
             r"Total Fund Assets:\s*[$€`]\s*([\d.,]+)\s*(million|billion)",
@@ -68,7 +66,6 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
             fields["fund_assets"] = german_decimal(m.group(1))
             fields["fund_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
 
-    # Fund assets from fact sheet header if not found in strategy PDF
     if "fund_assets" not in fields:
         m = re.search(
             r"Total Fund Assets:\s*[$€`]\s*([\d.,]+)\s*(million|billion)",
@@ -79,7 +76,6 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
             fields["fund_assets"] = german_decimal(m.group(1))
             fields["fund_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
 
-    # Strategy assets alone (no fund assets on same line)
     if "strategy_assets" not in fields:
         m = re.search(
             r"Total\s+(?:[\w\s]+?\s+)?Strategy Assets:\s*[$€`]([\d.,]+)\s*(million|billion)",
@@ -87,7 +83,6 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
             re.I
         )
         if not m:
-            # Last resort: just find "Strategy Assets:" anywhere
             m = re.search(
                 r"Strategy Assets:\s*[$€`]([\d.,]+)\s*(million|billion)",
                 strategy_text,
@@ -97,7 +92,6 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
             fields["strategy_assets"] = german_decimal(m.group(1))
             fields["strategy_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
 
-    # Investment experience
     m = re.search(
         r"(\d+)\s+years of investment experience",
         strategy_text,
@@ -106,7 +100,6 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
     if m:
         fields["investment_experience"] = m.group(1)
 
-    # Management fee: Class I
     m = re.search(
         r"Class I\s+N/A\s+[\d,]+\s+([\d.]+)\s+basis points",
         strategy_text,
@@ -115,7 +108,6 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
     if m:
         fields["mgmt_fee"] = german_decimal(str(float(m.group(1)) / 100))
 
-    # TER / Ongoing Management Charge for Class I
     uploaded_bytes = fact_sheet.getvalue()
     with pdfplumber.open(io.BytesIO(uploaded_bytes)) as pdf:
         for page in pdf.pages:
@@ -149,15 +141,10 @@ def update_text(text, fields):
 
     updated = text
 
+    # Replace the entire assets line simply
     updated = re.sub(
-        r"Assets in der Gesamtstrategie\s*~?\*[^*]+\*[^/]+//\s*SICAV Fondsvolumen\s*~?\*[^*]+\*[^•\n]+",
-        f"Assets in der Gesamtstrategie ~*{fields.get('strategy_assets', 'MISSING')} {fields.get('strategy_assets_unit', 'MISSING')}* USD // SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')} {fields.get('fund_assets_unit', 'MISSING')}* USD",
-        updated
-    )
-
-    updated = re.sub(
-        r"SICAV Fondsvolumen\s*~?\*[^*]+\*\s*(?:Mio\.|Mrd\.)?\s*(?:Euro|USD)",
-        f"SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')} {fields.get('fund_assets_unit', 'MISSING')}* USD",
+        r"Assets in der Gesamtstrategie:.*",
+        f"Assets in der Gesamtstrategie: ~*{fields.get('strategy_assets', 'MISSING')} {fields.get('strategy_assets_unit', 'MISSING')}* USD // SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')} {fields.get('fund_assets_unit', 'MISSING')}* USD",
         updated
     )
 
@@ -184,7 +171,6 @@ if st.button("Generate updated text"):
             strategy_text,
             fact_sheet
         )
-        st.write("DEBUG fields:", fields)
 
         updated = update_text(
             template,
