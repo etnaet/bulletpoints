@@ -26,12 +26,9 @@ def read_pdf(uploaded_file):
         stream=uploaded_file.read(),
         filetype="pdf"
     )
-
     text = ""
-
     for page in doc:
         text += page.get_text()
-
     return text
 
 def german_decimal(value):
@@ -43,10 +40,10 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
 
     # Strategy assets + fund assets from Strategy Highlights PDF
     m = re.search(
-    r"Total\s+(?:[\w\s]+?\s+)?Strategy Assets:\s*[$€]([\d.,]+)\s*(million|billion).*?\|\s*Total Fund Assets:\s*[$€]([\d.,]+)\s*(million|billion)",
-    strategy_text,
-    re.I
-)
+        r"Total\s+(?:[\w\s]+?\s+)?Strategy Assets:\s*[$€]([\d.,]+)\s*(million|billion).*?\|\s*Total Fund Assets:\s*[$€]([\d.,]+)\s*(million|billion)",
+        strategy_text,
+        re.I
+    )
 
     if m:
         fields["strategy_assets"] = german_decimal(m.group(1))
@@ -55,15 +52,15 @@ def extract_fields(fact_text, strategy_text, fact_sheet):
         fields["fund_assets_unit"] = "Mrd." if m.group(4).lower() == "billion" else "Mio."
 
     # Fund assets only, when Strategy Highlights does not show strategy assets
-if "fund_assets" not in fields:
-    m = re.search(
-        r"Total Fund Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)",
-        strategy_text,
-        re.I | re.M        # ← only change: added re.M
-    )
-    if m:
-        fields["fund_assets"] = german_decimal(m.group(1))
-        fields["fund_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
+    if "fund_assets" not in fields:
+        m = re.search(
+            r"Total Fund Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)",
+            strategy_text,
+            re.I | re.M
+        )
+        if m:
+            fields["fund_assets"] = german_decimal(m.group(1))
+            fields["fund_assets_unit"] = "Mrd." if m.group(2).lower() == "billion" else "Mio."
 
     # Investment experience
     m = re.search(
@@ -101,10 +98,10 @@ if "fund_assets" not in fields:
                             fields["ter"] = german_decimal(charge)
 
     return fields
+
 def update_text(text, fields):
 
     replacements = {
-
         r">\*\d+\*\s+Jahre Investmenterfahrung":
         f">*{fields.get('investment_experience', 'MISSING')}* Jahre Investmenterfahrung",
 
@@ -119,11 +116,10 @@ def update_text(text, fields):
 
     updated = re.sub(
         r"Assets in der Gesamtstrategie\s*~?\*[^*]+\*[^/]+//\s*SICAV Fondsvolumen\s*~?\*[^*]+\*[^•\n]+",
-        f"Assets in der Gesamtstrategie ~*{fields.get('strategy_assets', 'MISSING')} ...",
+        f"Assets in der Gesamtstrategie ~*{fields.get('strategy_assets', 'MISSING')} {fields.get('strategy_assets_unit', 'MISSING')}* USD // SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')} {fields.get('fund_assets_unit', 'MISSING')}* USD",
         updated
     )
 
-    # ADD THIS RIGHT BELOW ↓
     updated = re.sub(
         r"SICAV Fondsvolumen\s*~?\*[^*]+\*\s*(?:Mio\.|Mrd\.)?\s*(?:Euro|USD)",
         f"SICAV Fondsvolumen ~*{fields.get('fund_assets', 'MISSING')} {fields.get('fund_assets_unit', 'MISSING')}* USD",
@@ -142,13 +138,9 @@ def update_text(text, fields):
 if st.button("Generate updated text"):
 
     if not fact_sheet or not strategy or not template:
-
-        st.error(
-            "Please upload both PDFs and paste the German text."
-        )
+        st.error("Please upload both PDFs and paste the German text.")
 
     else:
-
         fact_text = read_pdf(fact_sheet)
         strategy_text = read_pdf(strategy)
 
@@ -157,7 +149,6 @@ if st.button("Generate updated text"):
             strategy_text,
             fact_sheet
         )
-
 
         updated = update_text(
             template,
