@@ -184,6 +184,7 @@ if st.button("Generate updated text"):
             strategy_text,
             fact_sheet
         )
+        st.write("DEBUG fields:", fields)
 
         updated = update_text(
             template,
