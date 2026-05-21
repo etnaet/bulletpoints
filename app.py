@@ -41,11 +41,11 @@ def extract_fields(fact_text, strategy_text):
 
     fields = {}
 
-    # Strategy assets + fund assets
+    # Strategy assets + fund assets from Strategy Highlights title area
     m = re.search(
-        r"Total\s+(?:[A-Za-z ]+)?Strategy Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion).*?Total Fund Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)",
+        r"Total\s+Strategy\s+Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)\s*\|\s*Total\s+Fund\s+Assets:\s*[$€]\s*([\d.,]+)\s*(million|billion)",
         strategy_text,
-        re.S | re.I,
+        re.I,
     )
 
     if m:
