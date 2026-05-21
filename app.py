@@ -32,7 +32,21 @@ def read_pdf(uploaded_file):
     return text
 
 def german_decimal(value):
-    return value.replace(".", ",")
+    value = value.strip()
+    if "," in value and "." in value:
+        # e.g. "1,176.9" — comma is thousands sep, dot is decimal
+        value = value.replace(",", "")  # → "1176.9"
+        integer, decimal = value.split(".")
+        # add period as thousands separator
+        integer_formatted = ""
+        for i, digit in enumerate(reversed(integer)):
+            if i > 0 and i % 3 == 0:
+                integer_formatted = "." + integer_formatted
+            integer_formatted = digit + integer_formatted
+        return integer_formatted + "," + decimal
+    else:
+        # e.g. "10.2" → "10,2"
+        return value.replace(".", ",")
 
 def extract_fields(fact_text, strategy_text, fact_sheet):
 
