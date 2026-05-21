@@ -86,7 +86,7 @@ if m:
     if m:
         fields["mgmt_fee"] = german_decimal(str(float(m.group(1)) / 100))
         
-       # TER / Ongoing Management Charge for Class I
+    # TER / Ongoing Management Charge for Class I
     import pdfplumber
 
     uploaded_bytes = fact_sheet.getvalue()
@@ -107,6 +107,7 @@ if m:
                             charge = clean_row[-1]
                             charge = charge.replace("%", "").strip()
                             fields["ter"] = german_decimal(charge)
+
     return fields
 
 def update_text(text, fields):
