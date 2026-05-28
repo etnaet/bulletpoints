@@ -4,7 +4,7 @@ import fitz  # PyMuPDF
 import pdfplumber
 import io
 
-st.title("Etna's Fund Summary Updater")
+st.title("Fund Summary Updater")
 
 st.markdown("""
 **How to use:**
